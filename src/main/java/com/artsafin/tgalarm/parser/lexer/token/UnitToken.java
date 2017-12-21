@@ -6,7 +6,7 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 public class UnitToken extends Token<ChronoUnit> {
-    public static Predicate<String> supports = (String chars) -> of(chars).isPresent();
+    public static Predicate<String> supports = (String chars) -> parseToUnit(chars).isPresent();
 
     private static Pattern secPattern = Pattern.compile("^с(ек(унд[уы]?)?)?$");
     private static Pattern minPattern = Pattern.compile("^м(ин(ут[уы]?)?)?$");
@@ -16,7 +16,7 @@ public class UnitToken extends Token<ChronoUnit> {
     private static Pattern monthPattern = Pattern.compile("^мес(яц(а|ев)?)?$");
     private static Pattern yearPattern = Pattern.compile("^(г(ода?)?|лет)$");
 
-    private static Optional<ChronoUnit> of(String value) {
+    private static Optional<ChronoUnit> parseToUnit(String value) {
         value = value.toLowerCase();
 
         if (secPattern.matcher(value).matches()) {
@@ -44,12 +44,11 @@ public class UnitToken extends Token<ChronoUnit> {
         return Optional.empty();
     }
 
-    public UnitToken(String value) {
-        super(of(value).get());
+    public static Optional<UnitToken> of(String value) {
+        return parseToUnit(value).map(UnitToken::new);
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        return (obj instanceof Token) && ((Token) obj).getValue().equals(getValue());
+    public UnitToken(ChronoUnit value) {
+        super(value);
     }
 }

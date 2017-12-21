@@ -4,9 +4,9 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public class NumberToken extends Token<Integer> {
-    public static Predicate<String> supports = (String chars) -> of(chars).isPresent();
+    public static Predicate<String> supports = (String chars) -> parseString(chars).isPresent();
 
-    private static Optional<Integer> of(String value) {
+    private static Optional<Integer> parseString(String value) {
         try {
             return Optional.of(Integer.valueOf(value));
         } catch (NumberFormatException exc) {
@@ -64,18 +64,13 @@ public class NumberToken extends Token<Integer> {
     private String originalValue;
 
     public NumberToken(String value) {
-        super(of(value).get());
+        super(parseString(value).get());
 
         originalValue = value;
     }
 
     public String getOriginalValue() {
         return originalValue;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return (obj instanceof NumberToken) && ((NumberToken) obj).getValue().equals(getValue());
     }
 
     public boolean canBe12hHours() {
@@ -88,13 +83,5 @@ public class NumberToken extends Token<Integer> {
 
     public boolean canBeDayOfMonth() {
         return getValue() >= 1 && getValue() <= 31;
-    }
-
-    public boolean canBeMinutes() {
-        return getValue() >= 0 && getValue() <= 59;
-    }
-
-    public boolean canBeSeconds() {
-        return getValue() >= 0 && getValue() <= 59;
     }
 }

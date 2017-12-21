@@ -1,7 +1,5 @@
 package com.artsafin.tgalarm;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,8 +13,7 @@ public class Configuration {
         this.values = values;
     }
 
-    @NotNull
-    public static Configuration fromFile(@NotNull String file) throws IOException {
+    public static Configuration fromFile(String file) throws IOException {
         try (FileInputStream inputStream = new FileInputStream(file)) {
 
             Properties properties = new Properties();

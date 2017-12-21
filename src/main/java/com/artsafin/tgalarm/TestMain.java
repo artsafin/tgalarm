@@ -1,14 +1,17 @@
 package com.artsafin.tgalarm;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
 public class TestMain {
     public static void main(String[] args) {
-        String str = "this is a big string";
+        ZonedDateTime now = ZonedDateTime.now();
 
-        Stream<String> stream = Arrays.stream(str.split("\\s+"));
+        now = now.plusMonths(3);
 
-        stream.forEach(System.out::println);
+        System.out.println(now.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
     }
+
 }

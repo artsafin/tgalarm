@@ -1,17 +1,13 @@
 package com.artsafin.tgalarm.parser.lexer.token;
 
+import java.util.Optional;
+
 public class LiteralToken extends Token<String> {
     public LiteralToken(String value) {
         super(value);
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        return obj.getClass().equals(getClass())
-                && (
-                ((LiteralToken) obj).getValue() == null && getValue() == null
-                        || ((LiteralToken) obj).getValue() != null && getValue() != null
-                        && getValue().equals(((LiteralToken) obj).getValue())
-        );
+    public static Optional<? extends LiteralToken> of (String value) {
+        return Optional.of(new LiteralToken(value));
     }
 }

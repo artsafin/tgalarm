@@ -12,19 +12,19 @@ public class Lexer {
     private String input;
 
     private List<SyntaxNode> syntax = Arrays.asList(
-            new SyntaxNode(AfterLiteralToken.supports, AfterLiteralToken::new),
-            new SyntaxNode(AmToken.supports, AmToken::new),
-            new SyntaxNode(DayLiteralToken.supports, DayLiteralToken::new),
-            new SyntaxNode(FullDateDashToken.supports, FullDateDashToken::new),
-            new SyntaxNode(FullDateDotToken.supports, FullDateDotToken::new),
-            new SyntaxNode(FullTimeToken.supports, FullTimeToken::new),
-            new SyntaxNode(InOnAtLiteralToken.supports, InOnAtLiteralToken::new),
-            new SyntaxNode(MonthNameToken.supports, MonthNameToken::new),
-            new SyntaxNode(NumberToken.supports, NumberToken::new),
-            new SyntaxNode(PmToken.supports, PmToken::new),
-            new SyntaxNode(RelativeDayToken.supports, RelativeDayToken::new),
-            new SyntaxNode(UnitToken.supports, UnitToken::new),
-            new SyntaxNode(WeekdayNameToken.supports, WeekdayNameToken::new)
+            new SyntaxNode(AfterLiteralToken.supports, AfterLiteralToken::of),
+            new SyntaxNode(AmToken.supports, AmToken::of),
+            new SyntaxNode(DayLiteralToken.supports, DayLiteralToken::of),
+            new SyntaxNode(FullDateDashToken.supports, FullDateDashToken::of),
+            new SyntaxNode(FullDateDotToken.supports, FullDateDotToken::of),
+            new SyntaxNode(FullTimeToken.supports, FullTimeToken::of),
+            new SyntaxNode(InOnAtLiteralToken.supports, InOnAtLiteralToken::of),
+            new SyntaxNode(MonthNameToken.supports, MonthNameToken::of),
+            new SyntaxNode(NumberToken.supports, s -> Optional.of(new NumberToken(s))),
+            new SyntaxNode(PmToken.supports, PmToken::of),
+            new SyntaxNode(RelativeDayToken.supports, RelativeDayToken::of),
+            new SyntaxNode(UnitToken.supports, UnitToken::of),
+            new SyntaxNode(WeekdayNameToken.supports, WeekdayNameToken::of)
     );
 
     public Lexer(String input) {

@@ -1,57 +1,69 @@
 package com.artsafin.tgalarm.parser.lexer.token;
 
 import java.time.Month;
+import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 public class MonthNameToken extends Token<Month> {
-    public static Predicate<String> supports = (String chars) -> MonthNameToken.strToMonthIndex(chars) != -1;
+    private static Pattern jan = Pattern.compile("^янв(ар[яье])?$");
+    private static Pattern feb = Pattern.compile("^фев(рал[яье])?$");
+    private static Pattern mar = Pattern.compile("^мар(т[ае]*)?$");
+    private static Pattern apr = Pattern.compile("^апр(ел[яье])?$");
+    private static Pattern may = Pattern.compile("^ма[ей]$");
+    private static Pattern jun = Pattern.compile("^июн[яье]*$");
+    private static Pattern jul = Pattern.compile("^июл[яье]*$");
+    private static Pattern aug = Pattern.compile("^авг(уст[а|е]*)?$");
+    private static Pattern sep = Pattern.compile("^сен(тябр[яье])?$");
+    private static Pattern oct = Pattern.compile("^окт(ябр[яье])?$");
+    private static Pattern nov = Pattern.compile("^ноя(бр[яье])?$");
+    private static Pattern dec = Pattern.compile("^дек(абр[яье])?$");
 
-    private static Predicate<String> isJan = (String chars) -> chars.equals("янв") || chars.equals("января") || chars.equals("январь");
-    private static Predicate<String> isFeb = (String chars) -> chars.equals("фев") || chars.equals("февраля") || chars.equals("февраль");
-    private static Predicate<String> isMar = (String chars) -> chars.equals("мар") || chars.equals("марта") || chars.equals("март");
-    private static Predicate<String> isApr = (String chars) -> chars.equals("апр") || chars.equals("апреля") || chars.equals("апрель");
-    private static Predicate<String> isMay = (String chars) -> chars.equals("май") || chars.equals("мая");
-    private static Predicate<String> isJun = (String chars) -> chars.equals("июн") || chars.equals("июня") || chars.equals("июнь");
-    private static Predicate<String> isJul = (String chars) -> chars.equals("июл") || chars.equals("июля") || chars.equals("июль");
-    private static Predicate<String> isAug = (String chars) -> chars.equals("авг") || chars.equals("августа") || chars.equals("август");
-    private static Predicate<String> isSep = (String chars) -> chars.equals("сен") || chars.equals("сентября") || chars.equals("сентябрь");
-    private static Predicate<String> isOct = (String chars) -> chars.equals("окт") || chars.equals("октября") || chars.equals("октябрь");
-    private static Predicate<String> isNov = (String chars) -> chars.equals("ноя") || chars.equals("ноября") || chars.equals("ноябрь");
-    private static Predicate<String> isDec = (String chars) -> chars.equals("дек") || chars.equals("декабря") || chars.equals("декабрь");
+    public static Predicate<String> supports = (String chars) -> of(chars).isPresent();
 
     private static int strToMonthIndex(String value) {
         value = value.toLowerCase();
 
-        if (isJan.test(value)) {
+        if (jan.matcher(value).matches()) {
             return 1;
-        } else if (isFeb.test(value)) {
+        } else if (feb.matcher(value).matches()) {
             return 2;
-        } else if (isMar.test(value)) {
+        } else if (mar.matcher(value).matches()) {
             return 3;
-        } else if (isApr.test(value)) {
+        } else if (apr.matcher(value).matches()) {
             return 4;
-        } else if (isMay.test(value)) {
+        } else if (may.matcher(value).matches()) {
             return 5;
-        } else if (isJun.test(value)) {
+        } else if (jun.matcher(value).matches()) {
             return 6;
-        } else if (isJul.test(value)) {
+        } else if (jul.matcher(value).matches()) {
             return 7;
-        } else if (isAug.test(value)) {
+        } else if (aug.matcher(value).matches()) {
             return 8;
-        } else if (isSep.test(value)) {
+        } else if (sep.matcher(value).matches()) {
             return 9;
-        } else if (isOct.test(value)) {
+        } else if (oct.matcher(value).matches()) {
             return 10;
-        } else if (isNov.test(value)) {
+        } else if (nov.matcher(value).matches()) {
             return 11;
-        } else if (isDec.test(value)) {
+        } else if (dec.matcher(value).matches()) {
             return 12;
         }
 
         return -1;
     }
 
-    public MonthNameToken(String value) {
-        super(Month.of(strToMonthIndex(value)));
+    public static Optional<MonthNameToken> of(String value) {
+        int month = strToMonthIndex(value);
+
+        if (month < 0) {
+            return Optional.empty();
+        }
+
+        return Optional.of(new MonthNameToken(month));
+    }
+
+    public MonthNameToken(int month) {
+        super(Month.of(month));
     }
 }

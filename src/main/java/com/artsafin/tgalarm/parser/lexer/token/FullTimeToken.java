@@ -9,15 +9,16 @@ import java.util.function.Predicate;
 public class FullTimeToken extends Token<LocalTime> {
     public static Predicate<String> supports = (String chars) -> of(chars).isPresent();
 
-    private static Optional<LocalTime> of(String chars) {
+    public static Optional<FullTimeToken> of(String chars) {
         try {
-            return Optional.of(LocalTime.parse(chars, DateTimeFormatter.ofPattern("HH:mm")));
+            LocalTime parsed = LocalTime.parse(chars, DateTimeFormatter.ofPattern("HH:mm"));
+            return Optional.of(new FullTimeToken(parsed));
         } catch (DateTimeParseException exc) {
             return Optional.empty();
         }
     }
 
-    public FullTimeToken(String value) {
-        super(of(value).get());
+    public FullTimeToken(LocalTime value) {
+        super(value);
     }
 }

@@ -1,6 +1,5 @@
 package com.artsafin.tgalarm;
 
-import org.jetbrains.annotations.NotNull;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
@@ -25,7 +24,6 @@ public class Main {
         }
     }
 
-    @NotNull
     private static String getConfigPath() {
         String cwd = Paths.get(".").toAbsolutePath().normalize().toString();
 

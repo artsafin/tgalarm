@@ -4,9 +4,9 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public class RelativeDayToken extends Token<Integer> {
-    public static Predicate<String> supports = (String chars) -> getDayIncrement(chars).isPresent();
+    public static Predicate<String> supports = (String chars) -> parseToIncrement(chars).isPresent();
 
-    private static Optional<Integer> getDayIncrement(String value) {
+    private static Optional<Integer> parseToIncrement(String value) {
         value = value.toLowerCase();
 
         if (value.equals("сегодня") || value.equals("сег")) {
@@ -28,7 +28,11 @@ public class RelativeDayToken extends Token<Integer> {
         return Optional.empty();
     }
 
-    public RelativeDayToken(String value) {
-        super(getDayIncrement(value).orElseThrow(() -> new RuntimeException("Invalid relative day")));
+    public static Optional<RelativeDayToken> of(String value) {
+        return parseToIncrement(value).map(RelativeDayToken::new);
+    }
+
+    public RelativeDayToken(int rel) {
+        super(rel);
     }
 }

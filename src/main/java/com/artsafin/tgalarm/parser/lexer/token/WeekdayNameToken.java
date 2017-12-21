@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public class WeekdayNameToken extends Token<DayOfWeek> {
-    public static Predicate<String> supports = (String chars) -> WeekdayNameToken.strToWeekdayIndex(chars).isPresent();
+    public static Predicate<String> supports = (String chars) -> strToWeekdayIndex(chars).isPresent();
 
     private static Predicate<String> isMon = (String chars) -> chars.equals("пн") || chars.equals("понедельник");
     private static Predicate<String> isTue = (String chars) -> chars.equals("вт") || chars.equals("вторник");
@@ -37,7 +37,11 @@ public class WeekdayNameToken extends Token<DayOfWeek> {
         return Optional.empty();
     }
 
-    public WeekdayNameToken(String value) {
-        super(DayOfWeek.of(strToWeekdayIndex(value).orElseThrow(() -> new RuntimeException("Invalid weekday"))));
+    public static Optional<WeekdayNameToken> of(String value) {
+        return strToWeekdayIndex(value).map(WeekdayNameToken::new);
+    }
+
+    public WeekdayNameToken(int dow) {
+        super(DayOfWeek.of(dow));
     }
 }

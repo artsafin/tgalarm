@@ -1,18 +1,17 @@
 package com.artsafin.tgalarm.parser;
 
 import java.time.*;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class Context {
     private boolean canHavePrefix = true;
 
     private ZonedDateTime now;
-    private int dayOfMonth;
-    private Month month;
-    private int year;
-    private DayOfWeek weekday;
-    private LocalTime time;
-    private List<Duration> intervals;
+    private DateTimeMutator mutator = new DateTimeMutator();
     private StringBuilder prefixMessage = new StringBuilder();
     private StringBuilder suffixMessage = new StringBuilder();
 
@@ -20,46 +19,9 @@ public class Context {
         this.now = now;
     }
 
-    public void addInterval(Duration duration) {
-        intervals.add(duration);
+    public void withDate(Consumer<DateTimeMutator> consumer) {
+        consumer.accept(mutator);
         markMutated();
-    }
-
-    public void setDayOfMonth(int dayOfMonth) {
-        this.dayOfMonth = dayOfMonth;
-        markMutated();
-    }
-
-    public void setMonth(Month month) {
-        this.month = month;
-        markMutated();
-    }
-
-    public void setYear(int year) {
-        this.year = year;
-        markMutated();
-    }
-
-    public void setWeekday(DayOfWeek weekday) {
-        this.weekday = weekday;
-        markMutated();
-    }
-
-    public void setTime(LocalTime time) {
-        this.time = time;
-        markMutated();
-    }
-
-    public void setHourAm(int hourAm) {
-        setHour(hourAm == 12 ? 0 : hourAm);
-    }
-
-    public void setHourPm(int hourPm) {
-        setHour(hourPm == 12 ? 12 : hourPm + 12);
-    }
-
-    public void setHour(int hour) {
-        setTime(LocalTime.of(hour, 0));
     }
 
     private void markMutated() {
@@ -72,9 +34,25 @@ public class Context {
 
     public void addMessage(String value) {
         if (canHavePrefix) {
-            prefixMessage.append(" ").append(value);
+            if (prefixMessage.length() != 0) {
+                prefixMessage.append(" ");
+            }
+            prefixMessage.append(value);
         } else {
-            suffixMessage.append(" ").append(value);
+            if (suffixMessage.length() != 0) {
+                suffixMessage.append(" ");
+            }
+
+            suffixMessage.append(value);
         }
+    }
+
+    public AnnotatedDateTime build() {
+        String message = prefixMessage
+            .append((prefixMessage.length() > 0 && suffixMessage.length() > 0 ? " " : ""))
+            .append(suffixMessage)
+            .toString();
+
+        return new AnnotatedDateTime(mutator.build(now), message);
     }
 }

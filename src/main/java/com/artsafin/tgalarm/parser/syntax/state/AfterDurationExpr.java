@@ -1,7 +1,9 @@
 package com.artsafin.tgalarm.parser.syntax.state;
 
 import com.artsafin.tgalarm.parser.Context;
+import com.artsafin.tgalarm.parser.DateTimeMutator;
 import com.artsafin.tgalarm.parser.lexer.token.*;
+import com.google.common.base.MoreObjects;
 
 import java.time.temporal.ChronoUnit;
 import java.util.stream.Stream;
@@ -46,7 +48,7 @@ public class AfterDurationExpr implements State {
             if (token instanceof UnitToken) {
                 ChronoUnit unit = ((UnitToken) token).getValue();
 
-                context.addInterval(unit.getDuration().multipliedBy(numberToken.getValue()));
+                context.withDate(it -> it.addInterval(unit.getDuration().multipliedBy(numberToken.getValue())));
             } else {
                 context.addMessage(capturedToken.getValue());
                 context.addMessage(numberToken.getOriginalValue());
@@ -59,5 +61,14 @@ public class AfterDurationExpr implements State {
     @Override
     public Stream<State> nextStates() {
         return Stream.of(new InitialState(context));
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+            .add("status", status)
+            .add("capturedToken", capturedToken)
+            .add("numberToken", numberToken)
+            .toString();
     }
 }

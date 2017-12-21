@@ -7,18 +7,18 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public class FullDateDashToken extends Token<LocalDate> {
-    public static Predicate<String> supports = (String chars) -> create(chars).isPresent();
+    public static Predicate<String> supports = (String chars) -> of(chars).isPresent();
 
-    private static Optional<LocalDate> create(String value) {
+    public static Optional<FullDateDashToken> of(String value) {
         try {
-            LocalDate parsed = LocalDate.parse(value, DateTimeFormatter.ofPattern("YYYY-mm-dd"));
-            return Optional.of(parsed);
+            LocalDate parsed = LocalDate.parse(value, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            return Optional.of(new FullDateDashToken(parsed));
         } catch (DateTimeParseException exc) {
             return Optional.empty();
         }
     }
 
-    public FullDateDashToken(String value) {
-        super(create(value).orElseThrow(() -> new RuntimeException("Invalid date")));
+    public FullDateDashToken(LocalDate value) {
+        super(value);
     }
 }

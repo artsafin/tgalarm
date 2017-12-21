@@ -2,6 +2,7 @@ package com.artsafin.tgalarm.parser.syntax.state;
 
 import com.artsafin.tgalarm.parser.Context;
 import com.artsafin.tgalarm.parser.lexer.token.Token;
+import com.google.common.base.MoreObjects;
 
 import java.util.stream.Stream;
 
@@ -28,5 +29,11 @@ public class InitialState implements State {
                 new RelativeDayExpr(context),
                 new MessageExpr(context)
         );
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+            .toString();
     }
 }
