@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
 @RunWith(DataProviderRunner.class)
 public class LexerTest {
     @DataProvider
-    public static Object[][] dataProviderAdd() {
+    public static Object[][] conversionSamples() {
         return new Object[][]{
             {
                 "через пять минут будет жопа",
@@ -102,12 +102,51 @@ public class LexerTest {
                     new FullTimeToken(LocalTime.of(19, 12))
                 )
             },
+            {
+                "завтра в 7 вечера жахнуть 50 грамм",
+                Arrays.asList(
+                    new RelativeDayToken(1),
+                    new InOnAtLiteralToken("в"),
+                    new NumberToken("7"),
+                    new PmToken("вечера"),
+                    new LiteralToken("жахнуть"),
+                    new NumberToken("50"),
+                    new LiteralToken("грамм")
+                )
+            },
+            {
+                "завтра в 7 жахнуть 50 грамм",
+                Arrays.asList(
+                    new RelativeDayToken(1),
+                    new InOnAtLiteralToken("в"),
+                    new NumberToken("7"),
+                    new LiteralToken("жахнуть"),
+                    new NumberToken("50"),
+                    new LiteralToken("грамм")
+                )
+            },
+            {
+                "завтра в 18:00 купить набор \"послезавтра в 9 утра\"",
+                Arrays.asList(
+                    new RelativeDayToken(1),
+                    new InOnAtLiteralToken("в"),
+                    new FullTimeToken(LocalTime.of(18, 0)),
+                    new LiteralToken("купить"),
+                    new LiteralToken("набор"),
+                    new EscapeToken("\""),
+                    new RelativeDayToken(2),
+                    new InOnAtLiteralToken("в"),
+                    new NumberToken("9"),
+                    new AmToken("утра"),
+                    new EscapeToken("\"")
+                )
+            },
         };
     }
 
     @Test
-    @UseDataProvider("dataProviderAdd")
-    public void name(String input, List<Token> expectedTokens) {
+    @UseDataProvider("conversionSamples")
+    public void testLexerConversion(String input, List<Token> expectedTokens) {
         Lexer lexer = new Lexer(input);
 
         List<Token> tokens = lexer.lex().collect(toList());

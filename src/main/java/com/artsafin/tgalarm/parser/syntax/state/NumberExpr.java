@@ -1,10 +1,7 @@
 package com.artsafin.tgalarm.parser.syntax.state;
 
 import com.artsafin.tgalarm.parser.Context;
-import com.artsafin.tgalarm.parser.lexer.token.DayLiteralToken;
-import com.artsafin.tgalarm.parser.lexer.token.MonthNameToken;
-import com.artsafin.tgalarm.parser.lexer.token.NumberToken;
-import com.artsafin.tgalarm.parser.lexer.token.Token;
+import com.artsafin.tgalarm.parser.lexer.token.*;
 import com.google.common.base.MoreObjects;
 
 import java.util.stream.Stream;
@@ -20,10 +17,15 @@ public class NumberExpr implements State {
 
     @Override
     public boolean accept(Token token) {
-        if (numberToken == null && token instanceof NumberToken && ((NumberToken) token).canBeDayOfMonth()) {
+        if (numberToken == null && token instanceof NumberToken) {
             numberToken = (NumberToken) token;
 
-            return true;
+            if (numberToken.canBeDayOfMonth()) {
+                return true;
+            } else {
+                context.addMessage(numberToken.getOriginalValue());
+                return false;
+            }
         }
 
         if (numberToken != null) {
@@ -34,6 +36,9 @@ public class NumberExpr implements State {
                     it.setDayOfMonth(numberToken.getValue());
                     it.setMonth(((MonthNameToken) token).getValue());
                 });
+            } else if (token instanceof LiteralToken) {
+                context.addMessage(numberToken.getOriginalValue());
+                context.addMessage(((LiteralToken) token).getValue());
             } else {
                 context.addMessage(numberToken.getOriginalValue());
             }

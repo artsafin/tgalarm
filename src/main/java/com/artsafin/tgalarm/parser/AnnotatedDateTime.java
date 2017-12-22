@@ -2,6 +2,7 @@ package com.artsafin.tgalarm.parser;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 public class AnnotatedDateTime {
     private ZonedDateTime dateTime;
@@ -12,8 +13,8 @@ public class AnnotatedDateTime {
         this.annotation = annotation;
     }
 
-    public ZonedDateTime getDateTime() {
-        return dateTime;
+    public Optional<ZonedDateTime> getDateTime() {
+        return Optional.ofNullable(dateTime);
     }
 
     public String getAnnotation() {

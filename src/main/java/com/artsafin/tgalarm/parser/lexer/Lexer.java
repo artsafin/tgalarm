@@ -12,6 +12,7 @@ public class Lexer {
     private String input;
 
     private List<SyntaxNode> syntax = Arrays.asList(
+            new SyntaxNode(EscapeToken.supports, s -> Optional.of(new EscapeToken(s))),
             new SyntaxNode(AfterLiteralToken.supports, AfterLiteralToken::of),
             new SyntaxNode(AmToken.supports, AmToken::of),
             new SyntaxNode(DayLiteralToken.supports, DayLiteralToken::of),
@@ -32,7 +33,10 @@ public class Lexer {
     }
 
     public Stream<Token> lex() {
-        Stream<String> wordStream = Arrays.stream(input.split("\\s+"));
+        String prepared = input
+            .replaceAll("(?:\\s|^)\"", "$0 ")
+            .replaceAll("\"(?:\\s|$)", " $0");
+        Stream<String> wordStream = Arrays.stream(prepared.split("\\s+"));
 
         return wordStream
                 .map((String word) -> {

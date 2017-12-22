@@ -49,19 +49,22 @@ public class InOnAtExpr implements State {
                 } else if (numberToken.canBe24hHours()) {
                     context.withDate(it -> it.setHour(numberToken.getValue()));
                 }
+            } else if (token instanceof LiteralToken) {
+                context.addMessage(capturedToken.getValue());
+                context.addMessage(((LiteralToken) token).getValue());
             } else {
                 context.addMessage(capturedToken.getValue());
             }
         }
 
         if (status == Status.WAITING_FOR_AM_PM_SPEC) {
-            if (token instanceof AmToken) {
-                context.withDate(it -> it.setHourAm(numberToken.getValue()));
-            } else if (token instanceof PmToken) {
+            if (token instanceof PmToken) {
                 context.withDate(it -> it.setHourPm(numberToken.getValue()));
-            } else {
-                context.addMessage(capturedToken.getValue());
-                context.addMessage(numberToken.getOriginalValue());
+            } else if (token instanceof AmToken) {
+                context.withDate(it -> it.setHourAm(numberToken.getValue()));
+            } else if (token instanceof LiteralToken) {
+                context.withDate(it -> it.setHourAm(numberToken.getValue()));
+                context.addMessage(((LiteralToken) token).getValue());
             }
         }
 

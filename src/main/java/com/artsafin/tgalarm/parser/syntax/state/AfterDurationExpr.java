@@ -39,6 +39,9 @@ public class AfterDurationExpr implements State {
                 status = Status.WAITING_FOR_UNIT;
 
                 return true;
+            } else if (token instanceof LiteralToken) {
+                context.addMessage(capturedToken.getValue());
+                context.addMessage(((LiteralToken) token).getValue());
             } else {
                 context.addMessage(capturedToken.getValue());
             }

@@ -12,6 +12,7 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 public class AlarmBot extends TelegramLongPollingBot {
     private final Configuration config;
@@ -58,10 +59,11 @@ public class AlarmBot extends TelegramLongPollingBot {
         sa.analyze(lexer.lex());
 
         AnnotatedDateTime annotatedDateTime = context.build();
+        Optional<ZonedDateTime> dateTime = annotatedDateTime.getDateTime();
 
         return
                 "When: "
-                        + annotatedDateTime.getDateTime().format(DateTimeFormatter.RFC_1123_DATE_TIME)
+                        + dateTime.map(dt -> dt.format(DateTimeFormatter.RFC_1123_DATE_TIME)).orElse("¯\\_(ツ)_/¯")
                 + "\n"
                 + "Message: " + annotatedDateTime.getAnnotation();
     }

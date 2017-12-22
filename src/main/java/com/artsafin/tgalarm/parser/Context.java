@@ -53,6 +53,6 @@ public class Context {
             .append(suffixMessage)
             .toString();
 
-        return new AnnotatedDateTime(mutator.build(now), message);
+        return new AnnotatedDateTime(mutator.build(now).orElse(null), message);
     }
 }

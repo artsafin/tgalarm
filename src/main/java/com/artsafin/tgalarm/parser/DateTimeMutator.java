@@ -6,6 +6,7 @@ import java.time.temporal.Temporal;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class DateTimeMutator {
     private DayOfWeek weekday;
@@ -61,7 +62,23 @@ public class DateTimeMutator {
         }
     }
 
-    public ZonedDateTime build(ZonedDateTime now) {
+    private Optional<ZonedDateTime> buildRelative(ZonedDateTime absolute, ZonedDateTime now) {
+        ZonedDateTime pivotDate = absolute;
+
+        if (time != null) {
+            now = now.with(time);
+        }
+
+        for (Duration d : intervals) {
+            if (now.plus(d).compareTo(absolute) > 0) {
+                pivotDate = pivotDate.plus(d);
+            }
+        }
+
+        return (pivotDate == now) ? Optional.empty() : Optional.of(pivotDate);
+    }
+
+    private Optional<ZonedDateTime> buildAbsolute(ZonedDateTime now) {
         ZonedDateTime pivotDate = now;
 
         if (time != null) {
@@ -87,10 +104,13 @@ public class DateTimeMutator {
             pivotDate = pivotDate.withYear(year);
         }
 
-        for (Duration d : intervals) {
-            pivotDate = pivotDate.plus(d);
-        }
+        return (pivotDate == now) ? Optional.empty() : Optional.of(pivotDate);
+    }
 
-        return pivotDate;
+    public Optional<ZonedDateTime> build(ZonedDateTime now) {
+        Optional<ZonedDateTime> absResult = buildAbsolute(now);
+        Optional<ZonedDateTime> relResult = buildRelative(absResult.orElse(now), now);
+
+        return relResult.isPresent() ? relResult : absResult;
     }
 }
