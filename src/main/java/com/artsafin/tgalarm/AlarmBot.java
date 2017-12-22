@@ -34,6 +34,8 @@ public class AlarmBot extends TelegramLongPollingBot {
             return;
         }
 
+        System.out.println("\tMessage:\n\t" + inputMessage.getText());
+
         String response = getResponse(inputMessage.getText());
 
         SendMessage message = new SendMessage()
@@ -58,7 +60,7 @@ public class AlarmBot extends TelegramLongPollingBot {
         AnnotatedDateTime annotatedDateTime = context.build();
 
         return
-                "Date: "
+                "When: "
                         + annotatedDateTime.getDateTime().format(DateTimeFormatter.RFC_1123_DATE_TIME)
                 + "\n"
                 + "Message: " + annotatedDateTime.getAnnotation();
