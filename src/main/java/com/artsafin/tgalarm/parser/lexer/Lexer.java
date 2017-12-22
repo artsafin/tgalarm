@@ -31,7 +31,7 @@ public class Lexer {
         this.input = input;
     }
 
-    public Stream<? extends Token> lex() {
+    public Stream<Token> lex() {
         Stream<String> wordStream = Arrays.stream(input.split("\\s+"));
 
         return wordStream
