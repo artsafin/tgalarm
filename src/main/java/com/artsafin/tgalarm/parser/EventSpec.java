@@ -4,11 +4,11 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
-public class AnnotatedDateTime {
+public class EventSpec {
     private ZonedDateTime dateTime;
     private String annotation;
 
-    public AnnotatedDateTime(ZonedDateTime dateTime, String annotation) {
+    EventSpec(ZonedDateTime dateTime, String annotation) {
         this.dateTime = dateTime;
         this.annotation = annotation;
     }
@@ -26,5 +26,9 @@ public class AnnotatedDateTime {
         return "At "
                 + dateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                 + " annotation '" + annotation + '\'';
+    }
+
+    public Optional<ZonedDateTime> nextPeriod() {
+        return Optional.empty();
     }
 }

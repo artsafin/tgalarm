@@ -1,4 +1,4 @@
-package com.artsafin.tgalarm;
+package com.artsafin.tgalarm.bot;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -35,7 +35,7 @@ public class Configuration {
         return values.get("token");
     }
 
-    String getUsername() {
+    public String getUsername() {
         return values.get("username");
     }
 }

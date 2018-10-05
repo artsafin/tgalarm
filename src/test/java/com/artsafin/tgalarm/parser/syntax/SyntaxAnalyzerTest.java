@@ -1,21 +1,17 @@
 package com.artsafin.tgalarm.parser.syntax;
 
-import com.artsafin.tgalarm.parser.AnnotatedDateTime;
+import com.artsafin.tgalarm.parser.EventSpec;
 import com.artsafin.tgalarm.parser.Context;
 import com.artsafin.tgalarm.parser.lexer.token.*;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -75,11 +71,11 @@ public class SyntaxAnalyzerTest {
 
         sa.analyze(tokens);
 
-        AnnotatedDateTime annotatedDateTime = context.build();
+        EventSpec eventSpec = context.build();
 
-        assertEquals(message, annotatedDateTime.getAnnotation());
+        assertEquals(message, eventSpec.getAnnotation());
 
-        Optional<ZonedDateTime> dt = annotatedDateTime.getDateTime();
+        Optional<ZonedDateTime> dt = eventSpec.getDateTime();
         assertTrue(dt.isPresent());
         assertEquals(dateFormatted, dt.get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
     }
