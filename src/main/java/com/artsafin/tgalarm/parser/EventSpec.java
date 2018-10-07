@@ -2,6 +2,7 @@ package com.artsafin.tgalarm.parser;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Optional;
 
 public class EventSpec {
@@ -17,15 +18,12 @@ public class EventSpec {
         return Optional.ofNullable(dateTime);
     }
 
-    public String getAnnotation() {
-        return annotation;
+    public Optional<String> timeSpecAsString() {
+        return Optional.ofNullable(dateTime).map(it -> it.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG)));
     }
 
-    @Override
-    public String toString() {
-        return "At "
-                + dateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                + " annotation '" + annotation + '\'';
+    public String annotation() {
+        return annotation;
     }
 
     public Optional<ZonedDateTime> nextPeriod() {

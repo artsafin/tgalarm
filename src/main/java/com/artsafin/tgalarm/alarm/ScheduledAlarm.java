@@ -10,6 +10,37 @@ import java.time.ZonedDateTime;
 import java.time.chrono.ChronoZonedDateTime;
 
 public class ScheduledAlarm implements Comparable<ScheduledAlarm> {
+    private enum Status {
+        ARMED,
+        UNARMED,
+    }
+
+    private static String createId(int userId, int msgId) {
+        return userId + String.format("%05d", msgId);
+    }
+
+    private final ZonedDateTime created;
+
+    private final EventSpec event;
+
+    private final String id;
+    private final int messageId;
+    private final Long chatId;
+    private final int userId;
+
+    private Status status = Status.ARMED;
+
+    private int responseMessageId;
+
+    public ScheduledAlarm(EventSpec event, int messageId, Long chatId, int userId) {
+        this.event = event;
+        this.messageId = messageId;
+        this.chatId = chatId;
+        this.userId = userId;
+        this.created = ZonedDateTime.now();
+
+        this.id = createId(userId, messageId);
+    }
 
     @Override
     public int compareTo(ScheduledAlarm other) {
@@ -19,27 +50,8 @@ public class ScheduledAlarm implements Comparable<ScheduledAlarm> {
         return (int) (t1 - t2);
     }
 
-    private enum Status {
-        ARMED,
-        UNARMED,
-    }
-
-    private final ZonedDateTime created;
-
-    private final EventSpec event;
-
-    private final Long chatId;
-    private final String userName;
-
-    private Status status = Status.ARMED;
-
-    private int msgId;
-
-    public ScheduledAlarm(EventSpec event, Long chatId, String userName) {
-        this.event = event;
-        this.chatId = chatId;
-        this.userName = userName;
-        this.created = ZonedDateTime.now();
+    public String id() {
+        return id;
     }
 
     private boolean matches(final ZonedDateTime dateTime) {
@@ -58,15 +70,15 @@ public class ScheduledAlarm implements Comparable<ScheduledAlarm> {
 
         SendMessage message = new SendMessage()
                 .setChatId(chatId)
-                .setText(event.getAnnotation());
+                .setText(event.annotation());
 
         Message msg = sender.execute(message);
 
-        msgId = msg.getMessageId();
+        responseMessageId = msg.getMessageId();
     }
 
-    String getUserName() {
-        return userName;
+    public int userId() {
+        return userId;
     }
 
     public EventSpec getEvent() {

@@ -5,10 +5,7 @@ import com.artsafin.tgalarm.bot.AlarmBot;
 import com.artsafin.tgalarm.bot.Configuration;
 import com.artsafin.tgalarm.alarm.AlarmRepository;
 import com.artsafin.tgalarm.alarm.MemoryAlarmRepository;
-import com.artsafin.tgalarm.bot.processor.AlertEntryProcessor;
-import com.artsafin.tgalarm.bot.processor.AlertListProcessor;
-import com.artsafin.tgalarm.bot.processor.FallbackProcessor;
-import com.artsafin.tgalarm.bot.processor.MessageProcessor;
+import com.artsafin.tgalarm.bot.processor.*;
 import com.artsafin.tgalarm.ticker.TickerService;
 import com.artsafin.tgalarm.ticker.TickerThread;
 import org.telegram.telegrambots.ApiContextInitializer;
@@ -31,12 +28,13 @@ public class Main {
         System.out.println("Link: https://t.me/" + config.getUsername());
 
         AlarmRepository alarms = new MemoryAlarmRepository();
-        AlarmService alarmService = new AlarmService(alarms);
 
-        MessageProcessor processor = new AlertListProcessor(alarmService)
-                .setSuccessor(new AlertEntryProcessor(alarmService)
-                        .setSuccessor(new FallbackProcessor())
-                );
+        MessageProcessor processor =
+                new AlertListProcessor(alarms)
+                        .setSuccessor(new AlarmEditProcessor(alarms)
+                                .setSuccessor(new AlertEntryProcessor(alarms)
+                                        .setSuccessor(new FallbackProcessor())
+                                ));
         AlarmBot bot = new AlarmBot(config, processor);
 
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();

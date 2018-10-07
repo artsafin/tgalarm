@@ -73,7 +73,7 @@ public class SyntaxAnalyzerTest {
 
         EventSpec eventSpec = context.build();
 
-        assertEquals(message, eventSpec.getAnnotation());
+        assertEquals(message, eventSpec.annotation());
 
         Optional<ZonedDateTime> dt = eventSpec.getDateTime();
         assertTrue(dt.isPresent());

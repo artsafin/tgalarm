@@ -16,7 +16,6 @@ public class TickerService {
     }
 
     void tick() {
-
         final ZonedDateTime now = ZonedDateTime.now();
 
         alarmRepository.forEach(alarm -> {

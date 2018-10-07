@@ -1,24 +1,22 @@
 package com.artsafin.tgalarm.bot.processor;
 
-import com.artsafin.tgalarm.alarm.AlarmService;
+import com.artsafin.tgalarm.alarm.AlarmRepository;
 import com.artsafin.tgalarm.alarm.ScheduledAlarm;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.bots.AbsSender;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.util.List;
+import java.io.Serializable;
+import java.util.Map;
 import java.util.Optional;
 
 public class AlertListProcessor implements MessageProcessor {
     private MessageProcessor successor;
 
-    private final AlarmService alarmService;
+    private final AlarmRepository alarmRepository;
 
-    public AlertListProcessor(AlarmService alarmService) {
-        this.alarmService = alarmService;
+    public AlertListProcessor(AlarmRepository alarmRepository) {
+        this.alarmRepository = alarmRepository;
     }
 
     @Override
@@ -29,36 +27,33 @@ public class AlertListProcessor implements MessageProcessor {
     }
 
     @Override
-    public void process(Message message, AbsSender sender) throws TelegramApiException {
+    public Optional<? extends BotApiMethod<? extends Serializable>> process(Message message) {
         String txt = message.getText();
 
         if (!txt.startsWith("/alarms")) {
             if (successor != null) {
-                successor.process(message, sender);
+                return successor.process(message);
             }
 
-            return;
+            return Optional.empty();
         }
 
-        Optional<List<ScheduledAlarm>> alarmList = alarmService.getUserAlerts(message.getChat().getUserName());
+        Map<String, ScheduledAlarm> alarmList = alarmRepository.getUserAlarms(message.getFrom().getId());
 
-        if (!alarmList.isPresent()) {
-            sender.execute(new SendMessage(message.getChatId(), "No alarms found"));
-
-            return;
+        if (alarmList.isEmpty()) {
+            return Optional.of(new SendMessage(message.getChatId(), "No alarms found"));
         }
 
         StringBuilder msg = new StringBuilder("Alarms list:\n");
-        alarmList.get().stream().sorted().forEach(it -> {
-            msg.append("⚪ ");
-            msg.append(it.getEvent().getDateTime().map(dt -> dt.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG))).orElse("n/a"));
-            msg.append(": ");
-            msg.append("*");
-            msg.append(it.getEvent().getAnnotation());
-            msg.append("*");
-            msg.append("\n");
-        });
+        alarmList.values().stream().sorted().forEach(it -> msg.append("⚪ ")
+                .append(it.getEvent().timeSpecAsString().orElse("n/a"))
+                .append(": ")
+                .append("<b>")
+                .append(it.getEvent().annotation())
+                .append("</b>")
+                .append(" /alarm").append(it.id())
+                .append("\n"));
 
-        sender.execute(new SendMessage(message.getChatId(), msg.toString()).setParseMode("markdown"));
+        return Optional.of(new SendMessage(message.getChatId(), msg.toString()).setParseMode("html"));
     }
 }

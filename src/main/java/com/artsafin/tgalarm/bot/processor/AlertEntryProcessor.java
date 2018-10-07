@@ -1,28 +1,26 @@
 package com.artsafin.tgalarm.bot.processor;
 
-import com.artsafin.tgalarm.alarm.AlarmService;
+import com.artsafin.tgalarm.alarm.AlarmRepository;
 import com.artsafin.tgalarm.alarm.ScheduledAlarm;
 import com.artsafin.tgalarm.parser.Context;
 import com.artsafin.tgalarm.parser.EventSpec;
 import com.artsafin.tgalarm.parser.lexer.Lexer;
 import com.artsafin.tgalarm.parser.syntax.SyntaxAnalyzer;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.bots.AbsSender;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.Serializable;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.Optional;
 
 public class AlertEntryProcessor implements MessageProcessor {
     private MessageProcessor successor;
 
-    private final AlarmService alarmService;
+    private final AlarmRepository alarms;
 
-    public AlertEntryProcessor(AlarmService alarmService) {
-        this.alarmService = alarmService;
+    public AlertEntryProcessor(AlarmRepository alarms) {
+        this.alarms = alarms;
     }
 
     @Override
@@ -33,7 +31,7 @@ public class AlertEntryProcessor implements MessageProcessor {
     }
 
     @Override
-    public void process(Message message, AbsSender sender) throws TelegramApiException {
+    public Optional<? extends BotApiMethod<? extends Serializable>> process(Message message) {
         String input = message.getText();
 
         Context context = new Context(ZonedDateTime.now());
@@ -47,20 +45,30 @@ public class AlertEntryProcessor implements MessageProcessor {
 
         if (!dateTime.isPresent()) {
             if (successor != null) {
-                successor.process(message, sender);
+                return successor.process(message);
             }
 
-            return;
+            return Optional.empty();
         }
 
-        alarmService.add(new ScheduledAlarm(eventSpec, message.getChatId(), message.getChat().getUserName()));
+        ScheduledAlarm alarm = new ScheduledAlarm(eventSpec, message.getMessageId(), message.getChatId(), message.getFrom().getId());
 
-        String fmtDt = dateTime.map(dt -> dt.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG))).orElse("");
+        boolean isUpdate = alarms.has(alarm);
+
+        alarms.addOrUpdate(alarm);
+
+        String htmlMessage = String.format(
+                "👌\n%s%s <b>%s</b>",
+                isUpdate ? "edited: " : "",
+                eventSpec.timeSpecAsString().orElse(""),
+                eventSpec.annotation()
+        );
 
         SendMessage response = new SendMessage()
-                .setParseMode("markdown")
+                .setParseMode("html")
                 .setChatId(message.getChatId())
-                .setText("👌\n" + fmtDt + " *" + eventSpec.getAnnotation() + "*");
-        sender.execute(response);
+                .setText(htmlMessage);
+
+        return Optional.of(response);
     }
 }
