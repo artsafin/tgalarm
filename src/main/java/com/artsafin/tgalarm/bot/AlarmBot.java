@@ -1,9 +1,13 @@
 package com.artsafin.tgalarm.bot;
 
-import com.artsafin.tgalarm.bot.processor.MessageProcessor;
+import com.artsafin.tgalarm.bot.command.Command;
+import com.artsafin.tgalarm.bot.command.CommandExecutorFactory;
+import com.artsafin.tgalarm.bot.command.Executor;
+import com.artsafin.tgalarm.bot.command.UnprocessableCommandException;
+import com.artsafin.tgalarm.bot.routing.Router;
+import com.artsafin.tgalarm.bot.routing.UnprocessableUpdateException;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -12,32 +16,31 @@ import java.util.Optional;
 
 public class AlarmBot extends TelegramLongPollingBot {
     private final Configuration config;
-    private final MessageProcessor processor;
+    private final CommandExecutorFactory commandExecutor;
+    private final Router router;
 
-    public AlarmBot(Configuration config, MessageProcessor processor) {
+    public AlarmBot(Configuration config, CommandExecutorFactory commandExecutor, Router router) {
         this.config = config;
-        this.processor = processor;
+        this.commandExecutor = commandExecutor;
+        this.router = router;
     }
 
     @Override
     public void onUpdateReceived(Update update) {
         System.out.println(update.toString());
 
-        Message inputMessage = Optional.ofNullable(update.getMessage()).orElse(update.getEditedMessage());
+        Command command;
+        Optional<? extends BotApiMethod<? extends Serializable>> response;
 
-        if (inputMessage == null) {
-            System.err.println("No message in update");
+        try {
+            command = router.route(update, new UserSession());
+            Executor executor = commandExecutor.of(command);
+            response = executor.execute(command);
+        } catch (UnprocessableUpdateException|UnprocessableCommandException exc) {
+            System.err.println("Unprocessable update: " + exc.getMessage());
+            exc.printStackTrace();
             return;
         }
-
-        if (!inputMessage.hasText()) {
-            System.err.println("No text in message");
-            return;
-        }
-
-        System.out.println("\tMessage:\n\t" + inputMessage.getText());
-
-        Optional<? extends BotApiMethod<? extends Serializable>> response = processor.process(inputMessage);
 
         response.ifPresent(it -> {
             try {

@@ -1,11 +1,13 @@
 package com.artsafin.tgalarm;
 
-import com.artsafin.tgalarm.alarm.AlarmService;
-import com.artsafin.tgalarm.bot.AlarmBot;
-import com.artsafin.tgalarm.bot.Configuration;
 import com.artsafin.tgalarm.alarm.AlarmRepository;
 import com.artsafin.tgalarm.alarm.MemoryAlarmRepository;
-import com.artsafin.tgalarm.bot.processor.*;
+import com.artsafin.tgalarm.bot.AlarmBot;
+import com.artsafin.tgalarm.bot.Configuration;
+import com.artsafin.tgalarm.bot.command.CommandExecutorFactory;
+import com.artsafin.tgalarm.bot.routing.CallbackQueryRouter;
+import com.artsafin.tgalarm.bot.routing.MessageRouter;
+import com.artsafin.tgalarm.bot.routing.Router;
 import com.artsafin.tgalarm.ticker.TickerService;
 import com.artsafin.tgalarm.ticker.TickerThread;
 import org.telegram.telegrambots.ApiContextInitializer;
@@ -29,13 +31,10 @@ public class Main {
 
         AlarmRepository alarms = new MemoryAlarmRepository();
 
-        MessageProcessor processor =
-                new AlertListProcessor(alarms)
-                        .setSuccessor(new AlarmEditProcessor(alarms)
-                                .setSuccessor(new AlertEntryProcessor(alarms)
-                                        .setSuccessor(new FallbackProcessor())
-                                ));
-        AlarmBot bot = new AlarmBot(config, processor);
+        Router routerChain = new CallbackQueryRouter().setSuccessor(new MessageRouter());
+        CommandExecutorFactory executorFactory = new CommandExecutorFactory();
+
+        AlarmBot bot = new AlarmBot(config, executorFactory, routerChain);
 
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
         try {
