@@ -6,6 +6,8 @@ import com.artsafin.tgalarm.bot.command.Executor;
 import com.artsafin.tgalarm.bot.command.UnprocessableCommandException;
 import com.artsafin.tgalarm.bot.routing.Router;
 import com.artsafin.tgalarm.bot.routing.UnprocessableUpdateException;
+import com.artsafin.tgalarm.bot.user.UserSession;
+import com.artsafin.tgalarm.bot.user.UserSessionRepository;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -18,11 +20,13 @@ public class AlarmBot extends TelegramLongPollingBot {
     private final Configuration config;
     private final CommandExecutorFactory commandExecutor;
     private final Router router;
+    private final UserSessionRepository userSessionRepository;
 
-    public AlarmBot(Configuration config, CommandExecutorFactory commandExecutor, Router router) {
+    public AlarmBot(Configuration config, CommandExecutorFactory commandExecutor, Router router, UserSessionRepository userSessionRepository) {
         this.config = config;
         this.commandExecutor = commandExecutor;
         this.router = router;
+        this.userSessionRepository = userSessionRepository;
     }
 
     @Override
@@ -32,11 +36,16 @@ public class AlarmBot extends TelegramLongPollingBot {
         Command command;
         Optional<? extends BotApiMethod<? extends Serializable>> response;
 
+        UserSession us = createUserSession(update);
+        userSessionRepository.load(us);
+
         try {
-            command = router.route(update, new UserSession());
+            command = router.route(update, us);
             Executor executor = commandExecutor.of(command);
-            response = executor.execute(command);
-        } catch (UnprocessableUpdateException|UnprocessableCommandException exc) {
+            response = executor.execute(command, us);
+
+            userSessionRepository.persist(us);
+        } catch (UnprocessableUpdateException | UnprocessableCommandException exc) {
             System.err.println("Unprocessable update: " + exc.getMessage());
             exc.printStackTrace();
             return;
@@ -50,6 +59,32 @@ public class AlarmBot extends TelegramLongPollingBot {
                 e.printStackTrace();
             }
         });
+    }
+
+    private UserSession createUserSession(Update update) {
+        if (update.getCallbackQuery() != null) {
+            return new UserSession(update.getCallbackQuery().getFrom().getId(), update.getCallbackQuery().getMessage().getChatId());
+        }
+        if (update.getMessage() != null) {
+            return new UserSession(update.getMessage().getFrom().getId(), update.getMessage().getChatId());
+        }
+        if (update.getEditedMessage() != null) {
+            return new UserSession(update.getEditedMessage().getFrom().getId(), update.getEditedMessage().getChatId());
+        }
+        if (update.getChannelPost() != null) {
+            return new UserSession(update.getChannelPost().getFrom().getId(), update.getChannelPost().getChatId());
+        }
+        if (update.getEditedChannelPost() != null) {
+            return new UserSession(update.getEditedChannelPost().getFrom().getId(), update.getEditedChannelPost().getChatId());
+        }
+        if (update.getChosenInlineQuery() != null) {
+            return new UserSession(update.getChosenInlineQuery().getFrom().getId());
+        }
+        if (update.getInlineQuery() != null) {
+            return new UserSession(update.getInlineQuery().getFrom().getId());
+        }
+
+        return new UserSession();
     }
 
     @Override

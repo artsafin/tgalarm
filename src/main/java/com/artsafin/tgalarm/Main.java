@@ -8,6 +8,8 @@ import com.artsafin.tgalarm.bot.command.CommandExecutorFactory;
 import com.artsafin.tgalarm.bot.routing.CallbackQueryRouter;
 import com.artsafin.tgalarm.bot.routing.MessageRouter;
 import com.artsafin.tgalarm.bot.routing.Router;
+import com.artsafin.tgalarm.bot.user.MemoryUserSession;
+import com.artsafin.tgalarm.bot.user.UserSessionRepository;
 import com.artsafin.tgalarm.ticker.TickerService;
 import com.artsafin.tgalarm.ticker.TickerThread;
 import org.telegram.telegrambots.ApiContextInitializer;
@@ -33,8 +35,9 @@ public class Main {
 
         Router routerChain = new CallbackQueryRouter().setSuccessor(new MessageRouter());
         CommandExecutorFactory executorFactory = new CommandExecutorFactory();
+        UserSessionRepository usRepo = new MemoryUserSession();
 
-        AlarmBot bot = new AlarmBot(config, executorFactory, routerChain);
+        AlarmBot bot = new AlarmBot(config, executorFactory, routerChain, usRepo);
 
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
         try {
