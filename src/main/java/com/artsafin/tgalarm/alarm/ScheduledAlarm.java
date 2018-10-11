@@ -15,18 +15,16 @@ public class ScheduledAlarm implements Comparable<ScheduledAlarm> {
         UNARMED,
     }
 
-    private static String createId(int userId, int msgId) {
+    public static String createId(int userId, int msgId) {
         return userId + String.format("%05d", msgId);
     }
 
-    private final ZonedDateTime created;
-
-    private final EventSpec event;
+    public final EventSpec event;
 
     private final String id;
     private final int messageId;
     private final Long chatId;
-    private final int userId;
+    public final int userId;
 
     private Status status = Status.ARMED;
 
@@ -37,7 +35,6 @@ public class ScheduledAlarm implements Comparable<ScheduledAlarm> {
         this.messageId = messageId;
         this.chatId = chatId;
         this.userId = userId;
-        this.created = ZonedDateTime.now();
 
         this.id = createId(userId, messageId);
     }
@@ -75,13 +72,5 @@ public class ScheduledAlarm implements Comparable<ScheduledAlarm> {
         Message msg = sender.execute(message);
 
         responseMessageId = msg.getMessageId();
-    }
-
-    public int userId() {
-        return userId;
-    }
-
-    public EventSpec getEvent() {
-        return event;
     }
 }

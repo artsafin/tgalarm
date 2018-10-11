@@ -33,14 +33,15 @@ public class AlarmBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         System.out.println(update.toString());
 
-        Command command;
         Optional<? extends BotApiMethod<? extends Serializable>> response;
 
         UserSession us = createUserSession(update);
         userSessionRepository.load(us);
 
         try {
-            command = router.route(update, us);
+            Command command = router.route(update, us);
+            System.out.println("Command: " + command.getClass().getName());
+
             Executor executor = commandExecutor.of(command);
             response = executor.execute(command, us);
 

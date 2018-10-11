@@ -4,7 +4,10 @@ import com.artsafin.tgalarm.alarm.AlarmRepository;
 import com.artsafin.tgalarm.alarm.MemoryAlarmRepository;
 import com.artsafin.tgalarm.bot.AlarmBot;
 import com.artsafin.tgalarm.bot.Configuration;
-import com.artsafin.tgalarm.bot.command.CommandExecutorFactory;
+import com.artsafin.tgalarm.bot.command.*;
+import com.artsafin.tgalarm.bot.command.executor.FallbackExecutor;
+import com.artsafin.tgalarm.bot.command.executor.ListAlarmsExecutor;
+import com.artsafin.tgalarm.bot.command.executor.ShowIndividualAlarmExecutor;
 import com.artsafin.tgalarm.bot.routing.CallbackQueryRouter;
 import com.artsafin.tgalarm.bot.routing.MessageRouter;
 import com.artsafin.tgalarm.bot.routing.Router;
@@ -18,6 +21,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.HashMap;
 
 public class Main {
     static {
@@ -32,10 +36,17 @@ public class Main {
         System.out.println("Link: https://t.me/" + config.getUsername());
 
         AlarmRepository alarms = new MemoryAlarmRepository();
+        UserSessionRepository usRepo = new MemoryUserSession();
 
         Router routerChain = new CallbackQueryRouter().setSuccessor(new MessageRouter());
-        CommandExecutorFactory executorFactory = new CommandExecutorFactory();
-        UserSessionRepository usRepo = new MemoryUserSession();
+        CommandExecutorFactory executorFactory = new CommandExecutorFactory(new HashMap<Class, Executor>() {{
+            put(DeleteAlarmCommand.class, new FallbackExecutor());
+            put(NewAlarmCommand.class, new FallbackExecutor());
+            put(SetEditFlowCommand.class, new FallbackExecutor());
+            put(UpdateAlarmCommand.class, new FallbackExecutor());
+            put(ListAlarmsCommand.class, new ListAlarmsExecutor(alarms));
+            put(ShowIndividualAlarmCommand.class, new ShowIndividualAlarmExecutor(alarms));
+        }});
 
         AlarmBot bot = new AlarmBot(config, executorFactory, routerChain, usRepo);
 

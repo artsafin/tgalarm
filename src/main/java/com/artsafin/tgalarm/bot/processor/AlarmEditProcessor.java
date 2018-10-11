@@ -47,7 +47,7 @@ public class AlarmEditProcessor implements MessageProcessor {
         }
 
         Optional<ScheduledAlarm> optAlarm = alarmRepository.getById(alarmId);
-        if (!optAlarm.isPresent() || optAlarm.get().userId() != message.getFrom().getId()) {
+        if (!optAlarm.isPresent() || optAlarm.get().userId != message.getFrom().getId()) {
             return Optional.of(new SendMessage(message.getChatId(), "Unknown alarm"));
         }
 
@@ -55,8 +55,8 @@ public class AlarmEditProcessor implements MessageProcessor {
 
         String msg = String.format(
                 "Date: %s\nMessage: <b>%s</b>",
-                alarm.getEvent().timeSpecAsString().orElse("n/a"),
-                alarm.getEvent().annotation()
+                alarm.event.timeSpecAsString().orElse("n/a"),
+                alarm.event.annotation()
         );
 
         SendMessage response = new SendMessage(message.getChatId(), msg)

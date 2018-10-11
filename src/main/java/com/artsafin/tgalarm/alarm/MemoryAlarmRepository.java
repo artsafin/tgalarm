@@ -12,10 +12,10 @@ public class MemoryAlarmRepository implements AlarmRepository {
     public boolean addOrUpdate(ScheduledAlarm alarm) {
         alarmsById.put(alarm.id(), alarm);
 
-        if (!alarmsByUser.containsKey(alarm.userId())) {
-            alarmsByUser.put(alarm.userId(), new HashMap<>());
+        if (!alarmsByUser.containsKey(alarm.userId)) {
+            alarmsByUser.put(alarm.userId, new HashMap<>());
         }
-        alarmsByUser.get(alarm.userId()).put(alarm.id(), alarm);
+        alarmsByUser.get(alarm.userId).put(alarm.id(), alarm);
 
         return true;
     }

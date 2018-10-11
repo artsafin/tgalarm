@@ -5,5 +5,5 @@ import com.artsafin.tgalarm.bot.command.Command;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 public interface Router {
-    Command route(Update update, UserSession session) throws UnprocessableUpdateException;
+    <T extends Command> T route(Update update, UserSession session) throws UnprocessableUpdateException;
 }

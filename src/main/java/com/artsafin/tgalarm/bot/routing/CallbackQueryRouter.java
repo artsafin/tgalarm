@@ -14,7 +14,7 @@ public class CallbackQueryRouter implements Router, ChainableRouter {
     @Override
     public Command route(Update update, UserSession session) throws UnprocessableUpdateException {
         if (!update.hasCallbackQuery()) {
-            return passToSuccessor(update);
+            return passToSuccessor(update, session);
         }
 
         final CallbackQuery callbackQuery = update.getCallbackQuery();

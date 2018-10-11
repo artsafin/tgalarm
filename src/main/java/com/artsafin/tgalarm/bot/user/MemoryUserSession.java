@@ -7,6 +7,10 @@ public class MemoryUserSession implements UserSessionRepository {
 
     @Override
     public void load(UserSession us) {
+        if (!sessions.containsKey(us.userId)) {
+            return;
+        }
+
         us.copyFrom(sessions.get(us.userId));
     }
 

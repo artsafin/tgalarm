@@ -1,7 +1,12 @@
-package com.artsafin.tgalarm.bot.processor;
+package com.artsafin.tgalarm.bot.command.executor;
 
 import com.artsafin.tgalarm.alarm.AlarmRepository;
 import com.artsafin.tgalarm.alarm.ScheduledAlarm;
+import com.artsafin.tgalarm.bot.command.Command;
+import com.artsafin.tgalarm.bot.command.Executor;
+import com.artsafin.tgalarm.bot.command.ListAlarmsCommand;
+import com.artsafin.tgalarm.bot.processor.MessageProcessor;
+import com.artsafin.tgalarm.bot.user.UserSession;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -10,38 +15,19 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 
-public class AlertListProcessor implements MessageProcessor {
-    private MessageProcessor successor;
-
+public class ListAlarmsExecutor implements Executor {
     private final AlarmRepository alarmRepository;
 
-    public AlertListProcessor(AlarmRepository alarmRepository) {
+    public ListAlarmsExecutor(AlarmRepository alarmRepository) {
         this.alarmRepository = alarmRepository;
     }
 
     @Override
-    public MessageProcessor setSuccessor(MessageProcessor next) {
-        this.successor = next;
-
-        return this;
-    }
-
-    @Override
-    public Optional<? extends BotApiMethod<? extends Serializable>> process(Message message) {
-        String txt = message.getText();
-
-        if (!txt.startsWith("/alarms")) {
-            if (successor != null) {
-                return successor.process(message);
-            }
-
-            return Optional.empty();
-        }
-
-        Map<String, ScheduledAlarm> alarmList = alarmRepository.getUserAlarms(message.getFrom().getId());
+    public Optional<? extends BotApiMethod<? extends Serializable>> execute(Command command, UserSession userSession) {
+        Map<String, ScheduledAlarm> alarmList = alarmRepository.getUserAlarms(userSession.userId);
 
         if (alarmList.isEmpty()) {
-            return Optional.of(new SendMessage(message.getChatId(), "No alarms found"));
+            return Optional.of(new SendMessage(userSession.chatId, "No alarms found"));
         }
 
         StringBuilder msg = new StringBuilder("Alarms list:\n");
@@ -54,6 +40,6 @@ public class AlertListProcessor implements MessageProcessor {
                 .append(" /alarm").append(it.id())
                 .append("\n"));
 
-        return Optional.of(new SendMessage(message.getChatId(), msg.toString()).setParseMode("html"));
+        return Optional.of(new SendMessage(userSession.chatId, msg.toString()).setParseMode("html"));
     }
 }

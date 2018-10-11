@@ -21,7 +21,7 @@ public class UserSession extends HashMap<String, String> {
         this.chatId = 0L;
     }
 
-    void copyFrom(UserSession us) {
+    void copyFrom(HashMap<String, String> us) {
         this.putAll(us);
     }
 }
