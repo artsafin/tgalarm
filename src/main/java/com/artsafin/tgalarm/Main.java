@@ -7,6 +7,7 @@ import com.artsafin.tgalarm.bot.Configuration;
 import com.artsafin.tgalarm.bot.command.*;
 import com.artsafin.tgalarm.bot.command.executor.FallbackExecutor;
 import com.artsafin.tgalarm.bot.command.executor.ListAlarmsExecutor;
+import com.artsafin.tgalarm.bot.command.executor.NewAlarmExecutor;
 import com.artsafin.tgalarm.bot.command.executor.ShowIndividualAlarmExecutor;
 import com.artsafin.tgalarm.bot.routing.CallbackQueryRouter;
 import com.artsafin.tgalarm.bot.routing.MessageRouter;
@@ -41,9 +42,9 @@ public class Main {
         Router routerChain = new CallbackQueryRouter().setSuccessor(new MessageRouter());
         CommandExecutorFactory executorFactory = new CommandExecutorFactory(new HashMap<Class, Executor>() {{
             put(DeleteAlarmCommand.class, new FallbackExecutor());
-            put(NewAlarmCommand.class, new FallbackExecutor());
+            put(NewAlarmCommand.class, new NewAlarmExecutor(alarms));
             put(SetEditFlowCommand.class, new FallbackExecutor());
-            put(UpdateAlarmCommand.class, new FallbackExecutor());
+            put(UpdateAlarmCommand.class, new NewAlarmExecutor(alarms));
             put(ListAlarmsCommand.class, new ListAlarmsExecutor(alarms));
             put(ShowIndividualAlarmCommand.class, new ShowIndividualAlarmExecutor(alarms));
         }});

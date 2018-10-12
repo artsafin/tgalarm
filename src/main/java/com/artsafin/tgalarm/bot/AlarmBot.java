@@ -4,6 +4,7 @@ import com.artsafin.tgalarm.bot.command.Command;
 import com.artsafin.tgalarm.bot.command.CommandExecutorFactory;
 import com.artsafin.tgalarm.bot.command.Executor;
 import com.artsafin.tgalarm.bot.command.UnprocessableCommandException;
+import com.artsafin.tgalarm.bot.command.executor.FallbackExecutor;
 import com.artsafin.tgalarm.bot.routing.Router;
 import com.artsafin.tgalarm.bot.routing.UnprocessableUpdateException;
 import com.artsafin.tgalarm.bot.user.UserSession;
@@ -44,6 +45,10 @@ public class AlarmBot extends TelegramLongPollingBot {
 
             Executor executor = commandExecutor.of(command);
             response = executor.execute(command, us);
+
+            if (!response.isPresent()) {
+                response = new FallbackExecutor().execute(command, us);
+            }
 
             userSessionRepository.persist(us);
         } catch (UnprocessableUpdateException | UnprocessableCommandException exc) {

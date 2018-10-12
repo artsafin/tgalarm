@@ -1,41 +1,35 @@
-package com.artsafin.tgalarm.bot.processor;
+package com.artsafin.tgalarm.bot.command.executor;
 
 import com.artsafin.tgalarm.alarm.AlarmRepository;
 import com.artsafin.tgalarm.alarm.ScheduledAlarm;
+import com.artsafin.tgalarm.bot.command.Command;
+import com.artsafin.tgalarm.bot.command.Executor;
+import com.artsafin.tgalarm.bot.command.NewAlarmCommand;
+import com.artsafin.tgalarm.bot.user.UserSession;
 import com.artsafin.tgalarm.parser.Context;
 import com.artsafin.tgalarm.parser.EventSpec;
 import com.artsafin.tgalarm.parser.lexer.Lexer;
 import com.artsafin.tgalarm.parser.syntax.SyntaxAnalyzer;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-public class AlertEntryProcessor implements MessageProcessor {
-    private MessageProcessor successor;
-
+public class NewAlarmExecutor implements Executor {
     private final AlarmRepository alarms;
 
-    public AlertEntryProcessor(AlarmRepository alarms) {
-        this.alarms = alarms;
+    public NewAlarmExecutor(AlarmRepository alarmRepository) {
+        this.alarms = alarmRepository;
     }
 
     @Override
-    public MessageProcessor setSuccessor(MessageProcessor next) {
-        this.successor = next;
-
-        return this;
-    }
-
-    @Override
-    public Optional<? extends BotApiMethod<? extends Serializable>> process(Message message) {
-        String input = message.getText();
+    public Optional<? extends BotApiMethod<? extends Serializable>> execute(Command command, UserSession userSession) {
+        NewAlarmCommand cmd = (NewAlarmCommand) command;
 
         Context context = new Context(ZonedDateTime.now());
-        Lexer lexer = new Lexer(input);
+        Lexer lexer = new Lexer(cmd.text);
         SyntaxAnalyzer sa = new SyntaxAnalyzer(context);
 
         sa.analyze(lexer.lex());
@@ -44,14 +38,10 @@ public class AlertEntryProcessor implements MessageProcessor {
         Optional<ZonedDateTime> dateTime = eventSpec.getDateTime();
 
         if (!dateTime.isPresent()) {
-            if (successor != null) {
-                return successor.process(message);
-            }
-
             return Optional.empty();
         }
 
-        ScheduledAlarm alarm = new ScheduledAlarm(eventSpec, message.getMessageId(), message.getChatId(), message.getFrom().getId());
+        ScheduledAlarm alarm = new ScheduledAlarm(eventSpec, cmd.messageId, userSession.chatId, userSession.userId);
 
         boolean isUpdate = alarms.has(alarm);
 
@@ -66,7 +56,7 @@ public class AlertEntryProcessor implements MessageProcessor {
 
         SendMessage response = new SendMessage()
                 .setParseMode("html")
-                .setChatId(message.getChatId())
+                .setChatId(userSession.chatId)
                 .setText(htmlMessage);
 
         return Optional.of(response);
